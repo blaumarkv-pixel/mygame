@@ -2,38 +2,162 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>My Game</title>
+<title>ITMO Horror</title>
 <style>
-  body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
-  canvas { background: #000; border: 1px solid #333; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000; color: #ddd;
+    font-family: 'Courier New', monospace;
+    height: 100vh; overflow: hidden;
+    display: flex; justify-content: center; align-items: center;
+    user-select: none;
+  }
+  #game { position: relative; width: 800px; height: 600px; background: #111; }
+
+  /* HUD верх */
+  #hud {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 12px 16px;
+    display: flex; justify-content: space-between;
+    font-size: 14px; pointer-events: none;
+  }
+  .btn {
+    background: #222; border: 1px solid #444; color: #ccc;
+    padding: 6px 12px; cursor: pointer; pointer-events: auto;
+    font-family: inherit; font-size: 14px;
+  }
+  .btn:hover { background: #333; }
+
+  /* Центральный вид */
+  #view {
+    position: absolute; top: 80px; left: 100px; right: 100px; bottom: 100px;
+    background: #1a1a1a; border: 2px solid #333;
+    display: flex; justify-content: center; align-items: center;
+    color: #555; font-size: 18px;
+  }
+
+  /* Стрелки по бокам */
+  .arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: #222; border: 1px solid #444; color: #ccc;
+    width: 40px; height: 60px; font-size: 22px;
+    cursor: pointer;
+  }
+  .arrow:hover { background: #333; }
+  #arrow-left  { left: 40px; }
+  #arrow-right { right: 40px; }
+
+  /* Нижняя зона */
+  #bottom {
+    position: absolute; bottom: 12px; left: 16px; right: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  #replica {
+    position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.7); padding: 6px 16px;
+    font-size: 13px; color: #aaa; min-width: 200px; text-align: center;
+  }
+
+  /* Телефон */
+  #phone {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 240px; height: 480px; background: #000;
+    border: 4px solid #222; border-radius: 30px;
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    color: #fff; z-index: 10;
+  }
+  #phone.open { display: flex; }
+  #phone .caller { font-size: 14px; color: #aaa; margin-bottom: 60px; }
+  #phone .hangup {
+    background: #c00; color: #fff; border: none; border-radius: 50%;
+    width: 80px; height: 80px; font-size: 12px; cursor: pointer;
+    font-family: inherit;
+  }
+  #phone .hangup:hover { background: #e00; }
 </style>
 </head>
 <body>
-<canvas id="c" width="800" height="600"></canvas>
+<div id="game">
+
+  <!-- HUD -->
+  <div id="hud">
+    <button class="btn" id="lights">☀ LIGHTS</button>
+    <div>ПСЖ: <span id="pszh">0</span></div>
+  </div>
+
+  <!-- Центральный вид -->
+  <div id="view">[ вид за ноутом — заглушка ]</div>
+
+  <!-- Стрелки -->
+  <button class="arrow" id="arrow-left">◀</button>
+  <button class="arrow" id="arrow-right">▶</button>
+
+  <!-- Реплика -->
+  <div id="replica"></div>
+
+  <!-- Низ -->
+  <div id="bottom">
+    <button class="btn" id="reload">RELOAD</button>
+    <button class="btn" id="phone-btn">📱</button>
+  </div>
+
+  <!-- Телефон -->
+  <div id="phone">
+    <div class="caller">Unknown Caller</div>
+    <button class="hangup" id="hangup">HANG UP</button>
+  </div>
+
+</div>
+
 <script>
-const c = document.getElementById('c');
-const ctx = c.getContext('2d');
-let x = 400, y = 300;
-const speed = 5, size = 50;
-const keys = {};
+  const phone = document.getElementById('phone');
+  const phoneBtn = document.getElementById('phone-btn');
+  const hangup = document.getElementById('hangup');
+  const replica = document.getElementById('replica');
+  const view = document.getElementById('view');
+  const arrows = {
+    left: document.getElementById('arrow-left'),
+    right: document.getElementById('arrow-right')
+  };
 
-document.addEventListener('keydown', e => keys[e.key] = true);
-document.addEventListener('keyup',   e => keys[e.key] = false);
+  let location = 'front';
+  let phoneOpen = false;
 
-function loop() {
-  if (keys['ArrowRight'] || keys['d']) x += speed;
-  if (keys['ArrowLeft']  || keys['a']) x -= speed;
-  if (keys['ArrowUp']    || keys['w']) y -= speed;
-  if (keys['ArrowDown']  || keys['s']) y += speed;
+  function setReplica(text) {
+    replica.textContent = text;
+  }
 
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, c.width, c.height);
-  ctx.fillStyle = '#0f0';
-  ctx.fillRect(x, y, size, size);
+  function togglePhone() {
+    phoneOpen = !phoneOpen;
+    phone.classList.toggle('open', phoneOpen);
+    if (phoneOpen) setReplica('Телефон открыт...');
+    else setReplica('');
+  }
 
-  requestAnimationFrame(loop);
-}
-loop();
+  phoneBtn.addEventListener('click', togglePhone);
+  hangup.addEventListener('click', () => {
+    setReplica('(пока ничего не делает)');
+  });
+
+  arrows.left.addEventListener('click', () => {
+    location = 'left';
+    view.textContent = '[ вид влево — заглушка ]';
+    setReplica('Location: left');
+  });
+  arrows.right.addEventListener('click', () => {
+    location = 'right';
+    view.textContent = '[ вид вправо — заглушка ]';
+    setReplica('Location: right');
+  });
+
+  document.getElementById('lights').addEventListener('click', () => {
+    setReplica('Свет: пока заглушка');
+  });
+  document.getElementById('reload').addEventListener('click', () => {
+    setReplica('Перезарядка: пока заглушка');
+  });
+
+  setReplica('Ты ждёшь. Лаба запушена. Осталось 5 минут.');
 </script>
 </body>
 </html>
