@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>My Game</title>
+<style>
+  body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
+  canvas { background: #000; border: 1px solid #333; }
+</style>
+</head>
+<body>
+<canvas id="c" width="800" height="600"></canvas>
+<script>
+const c = document.getElementById('c');
+const ctx = c.getContext('2d');
+let x = 400, y = 300;
+const speed = 5, size = 50;
+const keys = {};
+
+document.addEventListener('keydown', e => keys[e.key] = true);
+document.addEventListener('keyup',   e => keys[e.key] = false);
+
+function loop() {
+  if (keys['ArrowRight'] || keys['d']) x += speed;
+  if (keys['ArrowLeft']  || keys['a']) x -= speed;
+  if (keys['ArrowUp']    || keys['w']) y -= speed;
+  if (keys['ArrowDown']  || keys['s']) y += speed;
+
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.fillStyle = '#0f0';
+  ctx.fillRect(x, y, size, size);
+
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
