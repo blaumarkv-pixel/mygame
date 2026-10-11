@@ -120,7 +120,7 @@
     right: document.getElementById('arrow-right')
   };
 
-  let location = 'front';
+  let loc = 'front';
   let phoneOpen = false;
 
   function setReplica(text) {
@@ -140,14 +140,14 @@
   });
 
   arrows.left.addEventListener('click', () => {
-    location = 'left';
+    loc = 'left';
     view.textContent = '[ вид влево — заглушка ]';
-    setReplica('Location: left');
+    setReplica('loc: left');
   });
   arrows.right.addEventListener('click', () => {
-    location = 'right';
+    loc = 'right';
     view.textContent = '[ вид вправо — заглушка ]';
-    setReplica('Location: right');
+    setReplica('loc: right');
   });
 
   document.getElementById('lights').addEventListener('click', () => {
